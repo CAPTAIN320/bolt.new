@@ -16,6 +16,7 @@ import { cubicEasingFn } from '~/utils/easings';
 import { renderLogger } from '~/utils/logger';
 import { EditorPanel } from './EditorPanel';
 import { Preview } from './Preview';
+import JSZip from 'jszip';
 
 interface WorkspaceProps {
   chatStarted?: boolean;
@@ -51,6 +52,53 @@ const workbenchVariants = {
     },
   },
 } satisfies Variants;
+
+async function downloadAsZip(files: Record<string, any>) {
+  const zip = new JSZip();
+
+  // add files to zip
+  for (const [path, dirent] of Object.entries(files)) {
+    if (dirent?.type === 'file' && dirent.content) {
+      zip.file(path.startsWith('/') ? path.slice(1) : path, dirent.content);
+    }
+  }
+
+  // generate and download zip
+  const blob = await zip.generateAsync({ type: 'blob' });
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'files.zip';
+  document.body.appendChild(a);
+  a.click();
+  window.URL.revokeObjectURL(url);
+  document.body.removeChild(a);
+}
+
+async function copyFilesToDirectory(files: Record<string, any>) {
+  try {
+    // using the Fetch API to send files to your backend
+    const response = await fetch('/api/copy-files', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        files,
+        targetDirectory: '/Users/yaqub.mahmoud/github/ai-website-microservice/web-projects/project_name',
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to copy files');
+    }
+
+    toast.success('Files copied successfully');
+  } catch (error) {
+    console.error('Error copying files:', error);
+    toast.error('Failed to copy files');
+  }
+}
 
 export const Workbench = memo(({ chatStarted, isStreaming }: WorkspaceProps) => {
   renderLogger.trace('Workbench');
@@ -132,6 +180,14 @@ export const Workbench = memo(({ chatStarted, isStreaming }: WorkspaceProps) => 
                     Toggle Terminal
                   </PanelHeaderButton>
                 )}
+                <PanelHeaderButton className="mr-1 text-sm" onClick={() => downloadAsZip(files)}>
+                  <div className="i-ph:download mr-1" />
+                  Download ZIP
+                </PanelHeaderButton>
+                <PanelHeaderButton className="mr-1 text-sm" onClick={() => copyFilesToDirectory(files)}>
+                  <div className="i-ph:rocket mr-1" />
+                  Deploy
+                </PanelHeaderButton>
                 <IconButton
                   icon="i-ph:x-circle"
                   className="-mr-1"

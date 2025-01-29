@@ -184,10 +184,10 @@ export const Workbench = memo(({ chatStarted, isStreaming }: WorkspaceProps) => 
                   <div className="i-ph:download mr-1" />
                   Download ZIP
                 </PanelHeaderButton>
-                <PanelHeaderButton className="mr-1 text-sm" onClick={() => copyFilesToDirectory(files)}>
+                {/* <PanelHeaderButton className="mr-1 text-sm" onClick={() => copyFilesToDirectory(files)}>
                   <div className="i-ph:rocket mr-1" />
                   Deploy
-                </PanelHeaderButton>
+                </PanelHeaderButton> */}
                 <IconButton
                   icon="i-ph:x-circle"
                   className="-mr-1"

@@ -5,6 +5,7 @@ import { getSystemPrompt } from './prompts';
 
 import { createAnthropic } from '@ai-sdk/anthropic';
 import { createAzure } from '@ai-sdk/azure';
+import { createOllama } from 'ollama-ai-provider';
 
 interface ToolResult<Name extends string, Args, Result> {
   toolCallId: string;
@@ -31,18 +32,39 @@ export function streamText(messages: Messages, env: Env, options?: StreamingOpti
       resourceName: azureResourceName,
       apiKey: azureResourceNameApiKey,
       headers: {
-        'api_version': '2024-11-20',
+        api_version: '2024-11-20',
       },
     });
+
+    // `
+    //   For all designs I ask you to make, have them be beautiful, not cookie cutter. Make webpages that are fully featured and worthy for production.
+    //   By default, this template supports JSX syntax with Tailwind CSS classes, React hooks, and Lucide React for icons. Do not install other packages for UI themes, icons, etc unless absolutely necessary or I request them.
+    //   Use icons from lucide-react for logos.
+    //   Use stock photos from unsplash where appropriate, only valid URLs you know exist. Do not download the images, only link to them in image tags.
+    // `;
 
     return _streamText({
       // model: azure('gpt-4o'),
       model: azure('gpt-4o-2'),
       system: getSystemPrompt(),
       messages: convertToCoreMessages(messages),
-      maxTokens: MAX_TOKENS,
+      maxTokens: 8192,
       ...options,
     });
+
+    // const ollama = createOllama({
+    //   baseURL: 'http://localhost:11434/api',
+    // });
+
+    // return _streamText({
+    //   // model: ollama('llava'),
+    //   // model: ollama('deepseek-r1:7b'),
+    //   model: ollama('deepseek-r1:70b'),
+    //   system: getSystemPrompt(),
+    //   messages: convertToCoreMessages(messages),
+    //   maxTokens: MAX_TOKENS,
+    //   ...options,
+    // });
 
     // const anthropic = createAnthropic({
     //   apiKey: getAPIKey(env),
